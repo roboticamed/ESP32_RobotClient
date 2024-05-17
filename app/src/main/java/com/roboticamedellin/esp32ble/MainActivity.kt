@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.roboticamedellin.esp32ble.ui.theme.ESP32BleTheme
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
 
@@ -36,8 +39,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
 
+            var isLoading by remember { mutableStateOf(false) }
             var connectedState by remember { mutableStateOf(false) }
             var uiState by remember { mutableStateOf(UIState.DISCONNECTED) }
+
+            LaunchedEffect(isLoading) {
+                if (isLoading) {
+                    delay(3000)
+                    isLoading = false
+
+
+                    connectedState = true
+                    uiState = UIState.CONNECTED
+                }
+            }
 
             ESP32BleTheme {
                 BleManagerScreen(
@@ -58,14 +73,19 @@ class MainActivity : ComponentActivity() {
                                 "Device 3"
                             )
                         ) {
-                            connectedState = true
-                            uiState = UIState.CONNECTED
+                            isLoading = true
                         }
 
                         UIState.CONNECTED -> DeviceInteractionSection()
                         UIState.DISCONNECTED -> Box {}
                     }
                 }
+
+                if (isLoading) LoadingCover(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Gray.copy(alpha = 0.5f))
+                )
             }
         }
     }
@@ -155,5 +175,19 @@ fun DeviceInteractionSection() {
         ) {
             Text(text = "Send Data")
         }
+    }
+}
+
+@Composable
+fun LoadingCover(modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clickable {
+                // do nothing
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
     }
 }
