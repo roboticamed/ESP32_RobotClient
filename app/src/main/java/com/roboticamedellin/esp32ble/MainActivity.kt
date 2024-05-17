@@ -1,8 +1,10 @@
 package com.roboticamedellin.esp32ble
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +38,8 @@ import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
 
+    private val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -42,6 +47,8 @@ class MainActivity : ComponentActivity() {
             var isLoading by remember { mutableStateOf(false) }
             var connectedState by remember { mutableStateOf(false) }
             var uiState by remember { mutableStateOf(UIState.DISCONNECTED) }
+
+            val devicesListState by viewModel.deviceListState.collectAsState()
 
             LaunchedEffect(isLoading) {
                 if (isLoading) {
@@ -59,6 +66,7 @@ class MainActivity : ComponentActivity() {
                     connectedState = connectedState,
                     onScanClicked = {
                         uiState = UIState.SCANNING
+                        viewModel.startScan()
                     },
                     onDisconnectClicked = {
                         connectedState = false
@@ -67,11 +75,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     when (uiState) {
                         UIState.SCANNING -> DeviceListSection(
-                            devices = listOf(
-                                "Device 1",
-                                "Device 2",
-                                "Device 3"
-                            )
+                            devices = devicesListState
                         ) {
                             isLoading = true
                         }
@@ -91,12 +95,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-enum class UIState {
-    SCANNING,
-    CONNECTED,
-    DISCONNECTED
-}
-
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun BleManagerScreen(
     connectedState: Boolean,
