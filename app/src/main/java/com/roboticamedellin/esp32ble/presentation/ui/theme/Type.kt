@@ -1,4 +1,4 @@
-package com.roboticamedellin.esp32ble.ui.theme
+package com.roboticamedellin.esp32ble.presentation.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

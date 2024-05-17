@@ -1,4 +1,4 @@
-package com.roboticamedellin.esp32ble
+package com.roboticamedellin.esp32ble.presentation
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,4 +1,4 @@
-package com.roboticamedellin.esp32ble
+package com.roboticamedellin.esp32ble.presentation
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -33,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.roboticamedellin.esp32ble.ui.theme.ESP32BleTheme
+import com.roboticamedellin.esp32ble.presentation.ui.theme.ESP32BleTheme
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {

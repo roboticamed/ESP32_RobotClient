@@ -1,4 +1,4 @@
-package com.roboticamedellin.esp32ble.ui.theme
+package com.roboticamedellin.esp32ble.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

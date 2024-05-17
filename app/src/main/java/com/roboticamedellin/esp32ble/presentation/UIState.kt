@@ -1,4 +1,4 @@
-package com.roboticamedellin.esp32ble
+package com.roboticamedellin.esp32ble.presentation
 
 enum class UIState {
     SCANNING,
