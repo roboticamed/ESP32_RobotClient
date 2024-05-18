@@ -18,9 +18,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
 
-const val SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-const val CHARACTERISTIC_UUID_RX = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-const val CHARACTERISTIC_UUID_TX = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+const val SERVICE_UUID = "81fcf4c4-6939-42a9-9a32-33209d86738a"
+const val CHARACTERISTIC_UUID_RX = "9a317ed6-3ff9-4d67-b2a7-3b25b4ef9818"
+const val CHARACTERISTIC_UUID_TX = "d4a20c30-0612-4fe1-8258-c12822df3d6e"
 
 class BleScanner(
     private val context: Context
