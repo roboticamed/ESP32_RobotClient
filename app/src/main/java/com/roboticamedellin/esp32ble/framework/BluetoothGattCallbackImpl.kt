@@ -13,22 +13,13 @@ import java.util.UUID
 
 class BluetoothGattCallbackImpl(
     private val context: Context,
-    private val bluetoothGatt: BluetoothGatt
+    private val discoverServicesCallback: () -> Unit = {}
 ) : BluetoothGattCallback() {
 
     override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d("GATT_ESP32", "Connected to GATT server.")
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                return
-            }
-            bluetoothGatt.discoverServices()
+            discoverServicesCallback()
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             Log.d("GATT_ESP32", "Disconnected from GATT server.")
         }
