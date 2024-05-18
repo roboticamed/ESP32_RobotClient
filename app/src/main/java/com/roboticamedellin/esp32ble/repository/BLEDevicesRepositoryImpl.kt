@@ -19,13 +19,16 @@ class BLEDevicesRepositoryImpl(
         }
     }
 
-
     override fun scanDevices() {
         bleScanner.startScan()
     }
 
     override fun disconnect() {
         bleScanner.disconnect()
+    }
+
+    override fun sendCommand(command: String) {
+        bleScanner.sendValue(command)
     }
 
     override fun connectToDevice(address: String) {
@@ -38,8 +41,7 @@ class BLEDevicesRepositoryImpl(
             devices.map { device ->
                 BLEItem(
                     name = device.value.name ?: "Unknown",
-                    address = device.key,
-                    rssi = 0
+                    address = device.key
                 )
             }
         }

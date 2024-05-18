@@ -10,16 +10,18 @@ import kotlinx.coroutines.launch
 class MainViewModel : ViewModel() {
 
     private var bleDevicesRepository: BLEDevicesRepository? = null
+
+    private val _dataFlowState = MutableStateFlow("")
+    val dataFlowState = _dataFlowState.asStateFlow()
+
+    private val _deviceListState = MutableStateFlow<List<BLEItemUI>>(emptyList())
+    val deviceListState = _deviceListState.asStateFlow()
+
     fun initDependencies(
         bleDevicesRepository: BLEDevicesRepository
     ) {
         this.bleDevicesRepository = bleDevicesRepository
     }
-
-    private val _deviceListState = MutableStateFlow<List<BLEItemUI>>(emptyList())
-    val deviceListState = _deviceListState.asStateFlow()
-
-    val dataFlow by lazy { bleDevicesRepository?.getDataFlow() }
 
     fun startScan() {
         bleDevicesRepository?.scanDevices()
@@ -37,10 +39,16 @@ class MainViewModel : ViewModel() {
 
     fun connectToDevice(address: String) {
         bleDevicesRepository?.connectToDevice(address)
+
+        viewModelScope.launch {
+            bleDevicesRepository?.getDataFlow()?.collect { data ->
+                _dataFlowState.value = data
+            }
+        }
+    }
+
+    fun sendCommand(command: String) {
+        bleDevicesRepository?.sendCommand(command)
     }
 
 }
-
-//#define SERVICE_UUID "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-//#define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-//#define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"

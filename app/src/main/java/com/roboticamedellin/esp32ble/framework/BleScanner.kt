@@ -16,6 +16,7 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.util.UUID
 
 const val SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 const val CHARACTERISTIC_UUID_RX = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
@@ -114,7 +115,12 @@ class BleScanner(
     private lateinit var bluetoothGatt: BluetoothGatt
 
     @SuppressLint("MissingPermission")
-    private val gattCallbackImpl = BluetoothGattCallbackImpl(context) {
+    private val gattCallbackImpl = BluetoothGattCallbackImpl(
+        context = context,
+        onCharacteristicChangedCallback = { value ->
+            rxCallback(value)
+        }
+    ) {
         bluetoothGatt.discoverServices()
     }
 
@@ -133,5 +139,22 @@ class BleScanner(
         }
 
         bluetoothGatt = device.connectGatt(context, false, gattCallbackImpl)
+    }
+
+    fun sendValue(value: String) {
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            return
+        }
+        val bytes = value.toByteArray(Charsets.UTF_8)
+        val characteristic = bluetoothGatt.getService(UUID.fromString(SERVICE_UUID))
+            .getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_RX))
+        characteristic.value = bytes
+        bluetoothGatt.writeCharacteristic(characteristic)
     }
 }

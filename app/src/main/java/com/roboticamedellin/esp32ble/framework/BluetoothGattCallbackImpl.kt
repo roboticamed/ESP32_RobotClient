@@ -13,6 +13,7 @@ import java.util.UUID
 
 class BluetoothGattCallbackImpl(
     private val context: Context,
+    private val onCharacteristicChangedCallback: (String) -> Unit = {},
     private val discoverServicesCallback: () -> Unit = {}
 ) : BluetoothGattCallback() {
 
@@ -45,10 +46,8 @@ class BluetoothGattCallbackImpl(
             }
 
             val service = gatt.getService(UUID.fromString(SERVICE_UUID))
-            val txCharacteristic =
-                service.getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_TX))
-            val rxCharacteristic =
-                service.getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_RX))
+            val txCharacteristic = service.getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_TX))
+            val rxCharacteristic = service.getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_RX))
 
             // Enable notifications for the TX characteristic
             gatt.setCharacteristicNotification(txCharacteristic, true)
@@ -67,6 +66,7 @@ class BluetoothGattCallbackImpl(
             val stringValue = String(value, Charsets.UTF_8)
             Log.d("GATT_ESP32", "TX Characteristic changed: $stringValue")
             // Handle the changed value as needed
+            onCharacteristicChangedCallback(stringValue)
         }
     }
 }

@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -102,103 +103,116 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Composable
-fun BleManagerScreen(
-    connectedState: Boolean,
-    onScanClicked: () -> Unit,
-    onDisconnectClicked: () -> Unit,
-    composeSection: @Composable BoxScope.() -> Unit = {}
-) {
-    Scaffold { _ ->
-        Column(modifier = Modifier.fillMaxSize()) {
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    @Composable
+    fun BleManagerScreen(
+        connectedState: Boolean,
+        onScanClicked: () -> Unit,
+        onDisconnectClicked: () -> Unit,
+        composeSection: @Composable BoxScope.() -> Unit = {}
+    ) {
+        Scaffold { _ ->
+            Column(modifier = Modifier.fillMaxSize()) {
 
-            Box(modifier = Modifier.weight(1f)) {
-                composeSection()
-            }
+                Box(modifier = Modifier.weight(1f)) {
+                    composeSection()
+                }
 
-            if (connectedState) Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                onClick = onDisconnectClicked
-            ) {
-                Text(text = "Disconnect")
-            }
-            else Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                onClick = onScanClicked
-            ) {
-                Text(text = "Start Scan")
-            }
-
-            AnimatedVisibility(visible = connectedState) {
-                Text(
+                if (connectedState) Button(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.Green),
-                    text = "Connected",
-                    textAlign = TextAlign.Center
-                )
+                        .padding(horizontal = 16.dp),
+                    onClick = onDisconnectClicked
+                ) {
+                    Text(text = "Disconnect")
+                }
+                else Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    onClick = onScanClicked
+                ) {
+                    Text(text = "Start Scan")
+                }
+
+                AnimatedVisibility(visible = connectedState) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.Green),
+                        text = "Connected",
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }
-}
 
-// Find devices
-@Composable
-fun DeviceListSection(devices: List<BLEItemUI>, onDeviceSelected: (BLEItemUI) -> Unit = {}) {
-    LazyColumn {
-        items(devices) { device ->
-            DeviceItem(device, onDeviceSelected = onDeviceSelected)
+    // Find devices
+    @Composable
+    fun DeviceListSection(devices: List<BLEItemUI>, onDeviceSelected: (BLEItemUI) -> Unit = {}) {
+        LazyColumn {
+            items(devices) { device ->
+                DeviceItem(device, onDeviceSelected = onDeviceSelected)
+            }
         }
     }
-}
 
-@Composable
-fun DeviceItem(bleItem: BLEItemUI, onDeviceSelected: (BLEItemUI) -> Unit = {}) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp)
-            .clickable { onDeviceSelected(bleItem) }
-    ) {
-        Text(
-            modifier = Modifier.padding(vertical = 8.dp),
-            text = "${bleItem.name} -> ${bleItem.address}"
-        )
-    }
-}
-
-// Interact with BLE device
-@Composable
-fun DeviceInteractionSection() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Button(
+    @Composable
+    fun DeviceItem(bleItem: BLEItemUI, onDeviceSelected: (BLEItemUI) -> Unit = {}) {
+        Row(
             modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 16.dp),
-            onClick = { /*TODO*/ }
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
+                .clickable { onDeviceSelected(bleItem) }
         ) {
-            Text(text = "Send Data")
+            Text(
+                modifier = Modifier.padding(vertical = 8.dp),
+                text = "${bleItem.name} -> ${bleItem.address}"
+            )
         }
     }
-}
 
-@Composable
-fun LoadingCover(modifier: Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .clickable {
-                // do nothing
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
+    // Interact with BLE device
+    @Composable
+    fun DeviceInteractionSection() {
+        val dataFlowState by viewModel.dataFlowState.collectAsState("---")
+        var flagState by remember { mutableStateOf(false) }
+
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Button(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                onClick = {
+                    flagState = !flagState
+                    viewModel.sendCommand(if (flagState) "A" else "B")
+                }
+            ) {
+                Text(text = "Send Data")
+            }
+            Text(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = dataFlowState,
+                textAlign = TextAlign.Center
+            )
+        }
     }
+
+    @Composable
+    fun LoadingCover(modifier: Modifier) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .clickable {
+                    // do nothing
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    }
+
 }

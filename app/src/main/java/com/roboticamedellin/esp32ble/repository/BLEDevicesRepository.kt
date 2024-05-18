@@ -9,6 +9,8 @@ interface BLEDevicesRepository {
 
     fun disconnect()
 
+    fun sendCommand(command: String)
+
     fun connectToDevice(address: String)
 
     fun getDevicesFlow(): Flow<List<BLEItem>>
