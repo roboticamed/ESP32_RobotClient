@@ -33,15 +33,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.roboticamedellin.esp32ble.framework.BleScanner
 import com.roboticamedellin.esp32ble.presentation.ui.theme.ESP32BleTheme
+import com.roboticamedellin.esp32ble.repository.BLEDevicesRepositoryImpl
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
+    private val bleScanner = BleScanner(this)
+    private val bleDevicesRepository = BLEDevicesRepositoryImpl(bleScanner)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        viewModel.initDependencies(bleDevicesRepository)
+
         setContent {
 
             var isLoading by remember { mutableStateOf(false) }
@@ -76,8 +84,9 @@ class MainActivity : ComponentActivity() {
                     when (uiState) {
                         UIState.SCANNING -> DeviceListSection(
                             devices = devicesListState
-                        ) {
+                        ) { itemSelected ->
                             isLoading = true
+                            viewModel.connectToDevice(itemSelected.address)
                         }
 
                         UIState.CONNECTED -> DeviceInteractionSection()
@@ -142,7 +151,7 @@ fun BleManagerScreen(
 
 // Find devices
 @Composable
-fun DeviceListSection(devices: List<String>, onDeviceSelected: (String) -> Unit = {}) {
+fun DeviceListSection(devices: List<BLEItemUI>, onDeviceSelected: (BLEItemUI) -> Unit = {}) {
     LazyColumn {
         items(devices) { device ->
             DeviceItem(device, onDeviceSelected = onDeviceSelected)
@@ -151,14 +160,17 @@ fun DeviceListSection(devices: List<String>, onDeviceSelected: (String) -> Unit 
 }
 
 @Composable
-fun DeviceItem(device: String, onDeviceSelected: (String) -> Unit = {}) {
+fun DeviceItem(bleItem: BLEItemUI, onDeviceSelected: (BLEItemUI) -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
-            .clickable { onDeviceSelected(device) }
+            .clickable { onDeviceSelected(bleItem) }
     ) {
-        Text(modifier = Modifier.padding(vertical = 8.dp), text = device)
+        Text(
+            modifier = Modifier.padding(vertical = 8.dp),
+            text = "${bleItem.name} -> ${bleItem.address}"
+        )
     }
 }
 
