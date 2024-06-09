@@ -39,6 +39,7 @@ class MainViewModel : ViewModel() {
 
     fun disconnect() {
         bleDevicesRepository?.disconnect()
+        _listDataFlowState.value.clear()
     }
 
     fun connectToDevice(address: String) {

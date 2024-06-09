@@ -1,6 +1,7 @@
 package com.roboticamedellin.esp32ble.framework
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
@@ -17,6 +18,9 @@ class BluetoothGattCallbackImpl(
     private val discoverServicesCallback: () -> Unit = {}
 ) : BluetoothGattCallback() {
 
+    private var enableChange = true
+
+    @SuppressLint("MissingPermission")
     override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d("GATT_ESP32", "Connected to GATT server.")
@@ -46,8 +50,10 @@ class BluetoothGattCallbackImpl(
             }
 
             val service = gatt.getService(UUID.fromString(SERVICE_UUID))
-            val txCharacteristic = service.getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_TX))
-            val rxCharacteristic = service.getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_RX))
+            val txCharacteristic =
+                service.getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_TX))
+            val rxCharacteristic =
+                service.getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_RX))
 
             // Enable notifications for the TX characteristic
             gatt.setCharacteristicNotification(txCharacteristic, true)
@@ -66,7 +72,14 @@ class BluetoothGattCallbackImpl(
             val stringValue = String(value, Charsets.UTF_8)
 //            Log.d("GATT_ESP32", "TX Characteristic changed: $stringValue")
             // Handle the changed value as needed
-            onCharacteristicChangedCallback(stringValue)
+            if (enableChange) {
+                onCharacteristicChangedCallback(stringValue)
+            }
+            Log.i("GATT_ESP32_STATUS", "${enableChange}, ${this.hashCode()}")
         }
+    }
+
+    fun disconnect() {
+        enableChange = false
     }
 }

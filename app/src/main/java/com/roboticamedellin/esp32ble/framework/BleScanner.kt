@@ -16,6 +16,7 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
 
 const val SERVICE_UUID = "81fcf4c4-6939-42a9-9a32-33209d86738a"
@@ -26,8 +27,6 @@ class BleScanner(
     private val context: Context
 ) {
 
-    var rxCallback: (String) -> Unit = {}
-
     private val bluetoothAdapter: BluetoothAdapter by lazy {
         val bluetoothManager =
             context.getSystemService(Context.BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager
@@ -37,6 +36,9 @@ class BleScanner(
     private val _devicesMap = MutableStateFlow<Map<String, BluetoothDevice>>(mapOf())
     val devicesStateFlow: StateFlow<Map<String, BluetoothDevice>> get() = _devicesMap
     private val deviceMap = mutableMapOf<String, BluetoothDevice>()
+
+    private val _dataFlowState = MutableStateFlow("")
+    val valueFlowState = _dataFlowState.asStateFlow()
 
     private val bleScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -99,6 +101,9 @@ class BleScanner(
         bluetoothAdapter.bluetoothLeScanner.stopScan(bleScanCallback)
     }
 
+    private var bluetoothGatt: BluetoothGatt? = null
+    private var gattCallbackImpl: BluetoothGattCallbackImpl? = null
+
     fun disconnect() {
         if (ActivityCompat.checkSelfPermission(
                 context,
@@ -109,19 +114,26 @@ class BleScanner(
             //    ActivityCompat#requestPermissions
             return
         }
-        bluetoothGatt.disconnect()
+
+        // Disconnect doesn't work caused by: https://blog.classycode.com/a-short-story-about-android-ble-connection-timeouts-and-gatt-internal-errors-fa89e3f6a456
+        // and https://issuetracker.google.com/issues/37121017#comment13
+        bluetoothGatt?.disconnect()
+        gattCallbackImpl?.disconnect()
+        bluetoothGatt?.close()
+        gattCallbackImpl = null
+        bluetoothGatt = null
     }
 
-    private lateinit var bluetoothGatt: BluetoothGatt
-
     @SuppressLint("MissingPermission")
-    private val gattCallbackImpl = BluetoothGattCallbackImpl(
-        context = context,
-        onCharacteristicChangedCallback = { value ->
-            rxCallback(value)
+    private fun createGattCallback(): BluetoothGattCallbackImpl {
+        return BluetoothGattCallbackImpl(
+            context = context,
+            onCharacteristicChangedCallback = { value ->
+                _dataFlowState.value = value
+            }
+        ) {
+            bluetoothGatt?.discoverServices()
         }
-    ) {
-        bluetoothGatt.discoverServices()
     }
 
     fun connectToDevice(deviceAddress: String) {
@@ -138,7 +150,9 @@ class BleScanner(
             return
         }
 
+        gattCallbackImpl = createGattCallback()
         bluetoothGatt = device.connectGatt(context, false, gattCallbackImpl)
+
     }
 
     fun sendValue(value: String) {
@@ -152,9 +166,9 @@ class BleScanner(
             return
         }
         val bytes = value.toByteArray(Charsets.UTF_8)
-        val characteristic = bluetoothGatt.getService(UUID.fromString(SERVICE_UUID))
-            .getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_RX))
-        characteristic.value = bytes
-        bluetoothGatt.writeCharacteristic(characteristic)
+        val characteristic = bluetoothGatt?.getService(UUID.fromString(SERVICE_UUID))
+            ?.getCharacteristic(UUID.fromString(CHARACTERISTIC_UUID_RX))
+        characteristic?.value = bytes
+        bluetoothGatt?.writeCharacteristic(characteristic)
     }
 }
