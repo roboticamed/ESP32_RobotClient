@@ -64,7 +64,7 @@ class BluetoothGattCallbackImpl(
         if (characteristic.uuid == UUID.fromString(CHARACTERISTIC_UUID_TX)) {
             val value = characteristic.value
             val stringValue = String(value, Charsets.UTF_8)
-            Log.d("GATT_ESP32", "TX Characteristic changed: $stringValue")
+//            Log.d("GATT_ESP32", "TX Characteristic changed: $stringValue")
             // Handle the changed value as needed
             onCharacteristicChangedCallback(stringValue)
         }
