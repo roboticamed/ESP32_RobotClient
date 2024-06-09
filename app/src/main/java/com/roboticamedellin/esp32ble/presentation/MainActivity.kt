@@ -8,7 +8,6 @@ import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -177,13 +176,17 @@ class MainActivity : ComponentActivity() {
     // Interact with BLE device
     @Composable
     fun DeviceInteractionSection() {
-        val dataFlowState by viewModel.dataFlowState.collectAsState("---")
+        val valueFlowState by viewModel.valueFlowState.collectAsState("---")
         var flagState by remember { mutableStateOf(false) }
+        val valueListFlowState by viewModel.listDataFlowState.collectAsState()
 
         Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxSize()
         ) {
+            Chart(
+                modifier = Modifier.fillMaxWidth(),
+                listData = valueListFlowState
+            )
             Button(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = {
@@ -195,7 +198,7 @@ class MainActivity : ComponentActivity() {
             }
             Text(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                text = dataFlowState,
+                text = valueFlowState,
                 textAlign = TextAlign.Center
             )
         }

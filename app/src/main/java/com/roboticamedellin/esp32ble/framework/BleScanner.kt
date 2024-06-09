@@ -38,7 +38,7 @@ class BleScanner(
     val devicesStateFlow: StateFlow<Map<String, BluetoothDevice>> get() = _devicesMap
     private val deviceMap = mutableMapOf<String, BluetoothDevice>()
 
-    private val leScanCallback = object : ScanCallback() {
+    private val bleScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
             val device = result.device
@@ -79,7 +79,7 @@ class BleScanner(
             //    ActivityCompat#requestPermissions
             return
         }
-        bluetoothAdapter.bluetoothLeScanner.startScan(filters, settings, leScanCallback)
+        bluetoothAdapter.bluetoothLeScanner.startScan(filters, settings, bleScanCallback)
 
         Handler(Looper.getMainLooper()).postDelayed({
             stopScan()
@@ -96,7 +96,7 @@ class BleScanner(
             //    ActivityCompat#requestPermissions
             return
         }
-        bluetoothAdapter.bluetoothLeScanner.stopScan(leScanCallback)
+        bluetoothAdapter.bluetoothLeScanner.stopScan(bleScanCallback)
     }
 
     fun disconnect() {
