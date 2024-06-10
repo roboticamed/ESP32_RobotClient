@@ -75,7 +75,6 @@ class BluetoothGattCallbackImpl(
             if (enableChange) {
                 onCharacteristicChangedCallback(stringValue)
             }
-            Log.i("GATT_ESP32_STATUS", "${enableChange}, ${this.hashCode()}")
         }
     }
 

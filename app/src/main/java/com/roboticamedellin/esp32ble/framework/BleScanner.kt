@@ -15,7 +15,6 @@ import android.os.Handler
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
 
@@ -33,9 +32,10 @@ class BleScanner(
         bluetoothManager.adapter
     }
 
-    private val _devicesMap = MutableStateFlow<Map<String, BluetoothDevice>>(mapOf())
-    val devicesStateFlow: StateFlow<Map<String, BluetoothDevice>> get() = _devicesMap
     private val deviceMap = mutableMapOf<String, BluetoothDevice>()
+
+    private val _devicesMapStateFlow = MutableStateFlow<Map<String, BluetoothDevice>>(mapOf())
+    val devicesStateFlow = _devicesMapStateFlow.asStateFlow()
 
     private val _dataFlowState = MutableStateFlow("")
     val valueFlowState = _dataFlowState.asStateFlow()
@@ -48,7 +48,7 @@ class BleScanner(
 
             if (deviceMap.containsKey(deviceAddress).not()) {
                 deviceMap[device.address] = device
-                _devicesMap.value = deviceMap
+                _devicesMapStateFlow.value = deviceMap
             }
         }
 
@@ -60,7 +60,7 @@ class BleScanner(
 
                 if (deviceMap.containsKey(deviceAddress).not()) {
                     deviceMap[device.address] = device
-                    _devicesMap.value = deviceMap
+                    _devicesMapStateFlow.value = deviceMap
                 }
             }
         }
@@ -122,6 +122,8 @@ class BleScanner(
         bluetoothGatt?.close()
         gattCallbackImpl = null
         bluetoothGatt = null
+
+        deviceMap.clear()
     }
 
     @SuppressLint("MissingPermission")
