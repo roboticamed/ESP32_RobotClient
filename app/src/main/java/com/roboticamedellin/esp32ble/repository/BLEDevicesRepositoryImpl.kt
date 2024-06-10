@@ -11,13 +11,7 @@ class BLEDevicesRepositoryImpl(
     private val bleScanner: BleScanner
 ) : BLEDevicesRepository {
 
-    private val _valueStateFlow = MutableStateFlow("")
-
-    init {
-        bleScanner.rxCallback = { value ->
-            _valueStateFlow.value = value
-        }
-    }
+    private val _dataStateFlow = bleScanner.valueFlowState
 
     override fun scanDevices() {
         bleScanner.startScan()
@@ -46,6 +40,6 @@ class BLEDevicesRepositoryImpl(
             }
         }
 
-    override fun getDataFlow(): Flow<String> = _valueStateFlow
+    override fun getDataFlow(): Flow<String> = _dataStateFlow
 
 }

@@ -79,6 +79,7 @@ class MainActivity : ComponentActivity() {
                     onDisconnectClicked = {
                         connectedState = false
                         uiState = UIState.DISCONNECTED
+                        viewModel.disconnect()
                     },
                 ) {
                     when (uiState) {
